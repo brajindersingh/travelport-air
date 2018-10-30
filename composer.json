@@ -2,7 +2,7 @@
     "name": "thedevlogs/travelport",
     "type": "library",
 	"description": "Travelport API for Flight Bookings",
-    "license": "GNU",
+    "license": "MIT",
     "authors": [
         {
             "name": "Brajinder Singh",

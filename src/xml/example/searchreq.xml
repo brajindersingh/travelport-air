@@ -1,0 +1,32 @@
+<LowFareSearchReq xmlns="http://www.travelport.com/schema/air_v42_0" TraceId="851ea406-a554-45d9-bde9-10d383a315e3" TargetBranch="P3089889" ReturnUpsellFare="true">
+  <BillingPointOfSaleInfo xmlns="http://www.travelport.com/schema/common_v42_0" OriginApplication="uAPI" />
+  <SearchAirLeg>
+    <SearchOrigin>
+      <CityOrAirport xmlns="http://www.travelport.com/schema/common_v42_0" Code="NYC" PreferCity="true" />
+    </SearchOrigin>
+    <SearchDestination>
+      <CityOrAirport xmlns="http://www.travelport.com/schema/common_v42_0" Code="SFO" PreferCity="true" />
+    </SearchDestination>
+    <SearchDepTime PreferredTime="2018-10-31" />
+  </SearchAirLeg>
+  <SearchAirLeg>
+    <SearchOrigin>
+      <CityOrAirport xmlns="http://www.travelport.com/schema/common_v42_0" Code="SFO" PreferCity="true" />
+    </SearchOrigin>
+    <SearchDestination>
+      <CityOrAirport xmlns="http://www.travelport.com/schema/common_v42_0" Code="NYC" PreferCity="true" />
+    </SearchDestination>
+    <SearchDepTime PreferredTime="2018-11-06" />
+  </SearchAirLeg>
+  <AirSearchModifiers>
+    <PreferredProviders>
+      <Provider xmlns="http://www.travelport.com/schema/common_v42_0" Code="1P" />
+    </PreferredProviders>
+  </AirSearchModifiers>
+  <SearchPassenger xmlns="http://www.travelport.com/schema/common_v42_0" Code="ADT" />
+  <AirPricingModifiers>
+    <AccountCodes>
+      <AccountCode xmlns="http://www.travelport.com/schema/common_v42_0" Code="-" />
+    </AccountCodes>
+  </AirPricingModifiers>
+</LowFareSearchReq>

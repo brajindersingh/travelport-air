@@ -1,0 +1,24 @@
+{
+    "name": "thedevlogs/travelport",
+    "type": "library",
+	"description": "Travelport API for Flight Bookings",
+    "license": "GNU",
+    "authors": [
+        {
+            "name": "Brajinder Singh",
+            "email": "brajinder.singh@gmail.com",
+            "role": "Developer",
+			"homepage": "http://thedevlogs.com/"
+        }
+    ],
+	"keywords": ["Laravel", "Travelport"],
+    "require": {
+        "php": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Thedevlogs\\Travelport\\": "src"
+        }
+    },
+    "minimum-stability": "dev"
+}

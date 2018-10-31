@@ -9,11 +9,17 @@
             "email": "brajinder.singh@gmail.com",
             "role": "Developer",
 			"homepage": "http://thedevlogs.com/"
+        },
+		{
+            "name": "Archna Khiwaliya",
+            "email": "archna28109@gmail.com",
+            "role": "Developer",
+			"homepage": "http://thedevlogs.com/"
         }
     ],
 	"keywords": ["Laravel", "Travelport"],
     "require": {
-        "php": "^7.0",
+        "php": "^7.0"
     },
     "autoload": {
         "psr-4": {

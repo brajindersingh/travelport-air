@@ -1,5 +1,5 @@
 # Travelport 
-Laravel wrapper for Travelport api integration voice messaging for business.
+Laravel wrapper for Travelport Flight Booking using LowFareSearch
 
 #This is still in devlopment phase and not ready for use in production.
 

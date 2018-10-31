@@ -10,7 +10,7 @@ class TravelportServiceProvider extends ServiceProvider
 
     public function boot()
     {
-		$logs_path = __DIR__.'/../logs/travelport.php';
+		$logs_path = __DIR__.'/../logs/travelport.log';
 		$this->publishes([
 			$logs_path => storage_path('logs/travelport.log'),
 		], 'logs');

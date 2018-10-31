@@ -43,7 +43,8 @@ add this line in the `aliases` section.
 get the `config` by running this command.
 
 ```console
-php artisan vendor:publish
+php artisan vendor:publish --tag=config
+php artisan vendor:publish --tag=logs
 ```
 
 config option can be found `app/travelport.php`

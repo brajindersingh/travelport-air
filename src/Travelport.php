@@ -347,6 +347,69 @@ class Travelport
 		return $response;
 
     }
+	
+	
+	
+	public function XML2ARR($xml){
+		$xml = preg_replace("/(<\/?)(\w+):([^>]*>)/", '$1$2$3', $xml);
+		$xml = simplexml_load_string($xml);
+		$json = json_encode($xml);
+		$responseArray = json_decode($json,true);
+		return $responseArray;	
+	}	
+
+
+
+	public function getFlightsStopover($soaparr){
+		$tmp = $soaparr;
+		$airFlightDetails = $tmp['SOAPBody']['airLowFareSearchRsp']['airFlightDetailsList']['airFlightDetails'];
+		$airAirSegment = $tmp['SOAPBody']['airLowFareSearchRsp']['airAirSegmentList']['airAirSegment'];
+		$airFareInfo = $tmp['SOAPBody']['airLowFareSearchRsp']['airFareInfoList']['airFareInfo'];
+		$airAirPricingSolution = $tmp['SOAPBody']['airLowFareSearchRsp']['airAirPricingSolution'];
+
+		//array as per stopovers
+		$required_arr = array();
+
+		$price_data_arr = array();
+		
+		$i = 0;
+		foreach($airAirPricingSolution as $key => $val){
+			$price_data_arr[$i]['price'] = 	$val['@attributes'];
+			$price_data_arr[$i]['travelTime'] = $val['airJourney']['@attributes']['TravelTime'];
+
+			$j = 0;
+			foreach($val['airJourney']['airAirSegmentRef'] as $k => $v){
+
+				if(!empty($val['airJourney']['airAirSegmentRef'][0])){ 
+					//check if multidimesion - if so, add the key(@attributes) in $v
+					$price_data_arr[$i]['airAirSegmentRef'][$j] = $v['@attributes']['Key'];
+				}else{
+					$price_data_arr[$i]['airAirSegmentRef'][$j] = $v['Key'];
+				}	
+				$j++;
+			}
+			
+			$i++;
+		}	
+		
+		$airAirSegment_data_arr = array();
+		
+		foreach($airAirSegment as $key => $val){
+			$airAirSegment_data_arr[$val['@attributes']['Key']]	= $val['@attributes'];
+		}	
+		
+		$x = 0;
+		foreach($price_data_arr as $key => $val){
+			foreach($val['airAirSegmentRef'] as $ke => $ve){
+				$required_arr[$x][] = $airAirSegment_data_arr[$ve];
+			}
+			$x++;
+		}	
+		
+		return $required_arr;
+	}	
+	
+	
 
    
 }

@@ -349,7 +349,7 @@ class Travelport
     }
 	
 	
-	
+	/***This function is used for convert XML response to an array*****/
 	public function XML2ARR($xml){
 		$xml = preg_replace("/(<\/?)(\w+):([^>]*>)/", '$1$2$3', $xml);
 		$xml = simplexml_load_string($xml);
@@ -359,7 +359,7 @@ class Travelport
 	}	
 
 
-
+	/***This function is used to get the flight stopover from the response*****/
 	public function getFlightsStopover($soaparr){
 		$tmp = $soaparr;
 		$airFlightDetails = $tmp['SOAPBody']['airLowFareSearchRsp']['airFlightDetailsList']['airFlightDetails'];

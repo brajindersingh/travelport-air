@@ -140,19 +140,7 @@ class Travelport
 	 *
 	 * @return $message - To be used in curl request
 	 */
-	protected function parseXMLInput($path, $var_arr){//parse the Search response to get values to use in detail request
-	
-	
-		/* $var_arr = array(
-							'target_branch' => $target_branch,
-							'credentials'	=> $credentials,
-							'provider' => $provider,
-							'origin' => $postdata['origin'],
-							'destination' => $postdata['destination'],
-							'dep_time' => $postdata['deptime'],
-							); */
-	
-	
+	protected function parseXMLInput($path, $var_arr){//parse the Search response to get values to use in detail request	
 		/*
 		 * Variables that are required to be used in the lowfaresearch
 		 * request XML. The XML would be included using the require_once function.
@@ -160,13 +148,9 @@ class Travelport
 		$user 			= $this->USER;
 		$target_branch 	= $var_arr['target_branch'];
 		$trace_id 		= \Hash::make(uniqid($user));
-		$origin 		= $var_arr['origin'];
-		$destination 	= $var_arr['destination'];
-		$dep_time 		= $var_arr['dep_time'];
-		$provider 		= $var_arr['provider'];
 		
+		extract($var_arr);
 		require_once($path);
-		
 		//$message defined in the 'required' file
 		return $message;
 		
@@ -181,6 +165,7 @@ class Travelport
     private function _apiCall($method, $postdata = [], $xml, $extraData = []){
 
         $params = array();
+		$response = array();
 
         // POST REQUEST
         if(!empty($postdata))
@@ -207,85 +192,12 @@ class Travelport
             ];
 
             $params['debug'] = $this->DEBUG;
-
-            $response_xml = $this->curl_request($params);
-
-			$response = $this->parseXMLOutput($response_xml);
-			
-			echo '<pre>';
-			print_r($response);
-			die(' 217');
-			
+            $response = $this->curl_request($params);
         }else{
-            //GET REQUEST
-            
+            $response = array();
         }
-
-
-    }
-
-	
-	/*
-	 * Function to parse the XML output response provided by the travelport API
-	 * @Param string $xml_response
-	 *
-	 * @return array $response
-	 */
-	protected function parseXMLOutput($xml_response){//parse the Search response to get values to use in detail request
-		
-		$response = array();
-		
-		$AirAvailabilitySearchRsp = $xml_response;
-		
-		$xml = simplexml_load_String($AirAvailabilitySearchRsp, null, null, 'SOAP', true);
-		
-		if(!$xml){
-			throw new \Exception("Invalid XML response");
-		}
-		
-		
-		$Results = $xml->children('SOAP',true);
-		
-		foreach($Results->children('SOAP',true) as $fault){
-		
-			if(strcmp($fault->getName(),'Fault') == 0){
-				throw new \Exception("Error occurred in request/response processing!");
-			}
-		}
-		
-		$count = 0;
-		foreach($Results->children('air',true) as $nodes){
-			foreach($nodes->children('air',true) as $hsr){
-				if(strcmp($hsr->getName(),'AirSegmentList') == 0){
-					foreach($hsr->children('air',true) as $hp){
-						if(strcmp($hp->getName(),'AirSegment') == 0){
-							$count = $count + 1;
-							// file_put_contents($fileName,"\r\n"."Air Segment ".$count."\r\n"."\r\n", FILE_APPEND);
-							foreach($hp->attributes() as $a => $b){
-									
-									$val = (array)$b;
-								
-									$response[$count][$a] = $val[0];
-									//echo "$a"." : "."$b";
-									// file_put_contents($fileName,$a." : ".$b."\r\n", FILE_APPEND);
-							}												
-						}					
-					}
-				}
-				//break;
-			}
-		}
-		
-		
-		
-		
-		//$message defined in the 'required' file
 		return $response;
-		
-	}
-	
-	
-	
+    }	
 	
 	
 	/*
@@ -349,19 +261,29 @@ class Travelport
     }
 	
 	
-	/***This function is used for convert XML response to an array*****/
+	/*
+	 * Function to convert XML response to an array
+	 * @Param string $xml (xml response)
+	 *
+	 * @return $response - it will return an array
+	 */
 	public function XML2ARR($xml){
 		$xml = preg_replace("/(<\/?)(\w+):([^>]*>)/", '$1$2$3', $xml);
 		$xml = simplexml_load_string($xml);
 		$json = json_encode($xml);
-		$responseArray = json_decode($json,true);
-		return $responseArray;	
+		$response = json_decode($json,true);
+		return $response;	
 	}	
 
+	/*
+	 * Function to get the flight stopover from response
+	 * @Param string $stopover_array
+	 *
+	 * @return $response - return array according to stopoover 
+	 */
 
-	/***This function is used to get the flight stopover from the response*****/
-	public function getFlightsStopover($soaparr){
-		$tmp = $soaparr;
+	public function getFlightsStopover($stopover_array){
+		$tmp = $stopover_array;
 		$airFlightDetails = $tmp['SOAPBody']['airLowFareSearchRsp']['airFlightDetailsList']['airFlightDetails'];
 		$airAirSegment = $tmp['SOAPBody']['airLowFareSearchRsp']['airAirSegmentList']['airAirSegment'];
 		$airFareInfo = $tmp['SOAPBody']['airLowFareSearchRsp']['airFareInfoList']['airFareInfo'];

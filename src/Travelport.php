@@ -113,16 +113,14 @@ class Travelport
 	 *
 	 * @return $this
 	 */
-    public function checkAirAvailability($origin, $destination, $dep_time)
+    public function checkAirAvailability($routesArr)
     {
         $target_branch = $this->TARGETBRANCH;
 		$credentials = $this->CREDENTIALS;
 		$provider = $this->PROVIDER;
 		
 		$postdata = array();
-        $postdata['origin'] 	 	= $origin;
-        $postdata['destination'] 	= $destination;
-        $postdata['dep_time'] 	 	= $dep_time;
+        $postdata['routesArr'] 	 	= $routesArr;
 		$postdata['target_branch'] 	= $target_branch;
 		$postdata['credentials'] 	= $credentials;
 		$postdata['provider'] 		= $provider;	
@@ -133,6 +131,97 @@ class Travelport
 		
         return $result;
     }
+	
+		
+	/*
+	 * Function to get price for selected air segments
+	 * Air Availability searches return available air segments only, and do not
+	 * including fares or other pricing information. Because additional options are
+	 * available beyond the segments returned in the initial response, a
+	 * NextResultReference key is returned. This key can be used in a subsequent Air
+	 * Availability request to return the additional segment options.
+	 * 
+	 * @Param string $origin, string $destination, string $deptime
+	 *
+	 * @return $this
+	 */
+    public function airPriceRequest($segment_data){
+        $target_branch = $this->TARGETBRANCH;
+		$credentials = $this->CREDENTIALS;
+		$provider = $this->PROVIDER;
+		
+		$postdata = array();
+		$postdata['target_branch'] 	= $target_branch;
+		$postdata['credentials'] 	= $credentials;
+		$postdata['provider'] 		= $provider;	
+		$postdata['segment_data'] = $segment_data;
+		$php_xml = '002-01_1P_AirPrice_Rq.php';
+		
+		$result = $this->_apiCall('POST', $postdata, $php_xml);
+        return $result;
+    }
+	
+	
+	
+	/*
+	 * Function to get price for selected air segments
+	 * Air Availability searches return available air segments only, and do not
+	 * include fares or other pricing information. Because additional options are
+	 * available beyond the segments returned in the initial response, a
+	 * NextResultReference key is returned. This key can be used in a subsequent Air
+	 * Availability request to return the additional segment options.
+	 * 
+	 * @Param string $origin, string $destination, string $deptime
+	 *
+	 * @return $this
+	 */
+    public function airBookingRequset($air_price_data){
+        $target_branch = $this->TARGETBRANCH;
+		$credentials = $this->CREDENTIALS;
+		$provider = $this->PROVIDER;
+		
+		$postdata = array();
+		$postdata['target_branch'] 	= $target_branch;
+		$postdata['credentials'] 	= $credentials;
+		$postdata['provider'] 		= $provider;	
+		$postdata['air_price_data'] = $air_price_data;
+		$php_xml = '003-01_1P_AirBook_Rq.php';
+		
+		$result = $this->_apiCall('POST', $postdata, $php_xml);
+		
+        return $result;
+    }
+	
+	
+	/*
+	 * Function to get price for selected air segments
+	 * Air Availability searches return available air segments only, and do not
+	 * include fares or other pricing information. Because additional options are
+	 * available beyond the segments returned in the initial response, a
+	 * NextResultReference key is returned. This key can be used in a subsequent Air
+	 * Availability request to return the additional segment options.
+	 * 
+	 * @Param string $origin, string $destination, string $deptime
+	 *
+	 * @return $this
+	 */
+    public function airTicketRequset($air_book_data){
+        $target_branch = $this->TARGETBRANCH;
+		$credentials = $this->CREDENTIALS;
+		$provider = $this->PROVIDER;
+		
+		$postdata = array();
+		$postdata['target_branch'] 	= $target_branch;
+		$postdata['credentials'] 	= $credentials;
+		$postdata['provider'] 		= $provider;	
+		$postdata['air_book_data'] = $air_book_data;
+		$php_xml = '004-01_1P_AirTicket_Rq.php';
+		
+		$result = $this->_apiCall('POST', $postdata, $php_xml);
+		
+        return $result;
+    }
+	
 
 	/*
 	 * Function to prepare the XML for curl request
@@ -176,6 +265,7 @@ class Travelport
 			$var_arr = $postdata;
 			
 			$message = $this->parseXMLInput($path, $var_arr);
+
 		
             $params['message'] = $message;
 			
@@ -272,16 +362,56 @@ class Travelport
 		$xml = simplexml_load_string($xml);
 		$json = json_encode($xml);
 		$response = json_decode($json,true);
-		return $response;	
+		
+		if ( $this->multiKeyExists($response, "SOAPFault") ){
+			$this->errorHandling($response);
+		}
+		return $response;
 	}	
 
+	
+	/*
+	 * Function is used for exception handling
+	 * @Param string $response (xml response with fault)
+	 *
+	 */
+	public function errorHandling($response){
+		if( $response['SOAPBody']['SOAPFault']['faultcode'] == 'Server.ValidationException' ){
+			throw new \RuntimeException($response['SOAPBody']['SOAPFault']['faultstring']);		
+		}
+		if( $response['SOAPBody']['SOAPFault']['faultcode'] == 'Server.Business' ){
+			throw new \RuntimeException($response['SOAPBody']['SOAPFault']['faultstring']);		
+		}
+	}
+	
+
+	public function multiKeyExists($arr, $key) {
+
+		// is in base array?
+		if (array_key_exists($key, $arr)) {
+			return true;
+		}
+
+		// check arrays contained in this array
+		foreach ($arr as $element) {
+			if (is_array($element)) {
+				if ($this->multiKeyExists($element, $key)) {
+					return true;
+				}
+			}
+
+		}
+
+		return false;
+	}
+	
+	
 	/*
 	 * Function to get the flight stopover from response
 	 * @Param string $stopover_array
 	 *
 	 * @return $response - return array according to stopoover 
 	 */
-
 	public function getFlightsStopover($stopover_array){
 		$tmp = $stopover_array;
 		$airFlightDetails = $tmp['SOAPBody']['airLowFareSearchRsp']['airFlightDetailsList']['airFlightDetails'];
@@ -294,6 +424,10 @@ class Travelport
 
 		$price_data_arr = array();
 		
+		$travel_time_arr = array();
+		
+		$segment_price_arr = array();
+		
 		$i = 0;
 		foreach($airAirPricingSolution as $key => $val){
 			$price_data_arr[$i]['price'] = 	$val['@attributes'];
@@ -303,10 +437,14 @@ class Travelport
 			foreach($val['airJourney']['airAirSegmentRef'] as $k => $v){
 
 				if(!empty($val['airJourney']['airAirSegmentRef'][0])){ 
-					//check if multidimesion - if so, add the key(@attributes) in $v
-					$price_data_arr[$i]['airAirSegmentRef'][$j] = $v['@attributes']['Key'];
+					//check if multidimension - if so, add the key(@attributes) in $v
+					$price_data_arr[$i]['airAirSegmentRef'][$j]['key'] = $v['@attributes']['Key'];
+					$price_data_arr[$i]['airAirSegmentRef'][$j]['price'] = $price_data_arr[$i]['price']['TotalPrice'];
+					$price_data_arr[$i]['airAirSegmentRef'][$j]['travelTime'] = $this->lexical_to_human($price_data_arr[$i]['travelTime']);
 				}else{
-					$price_data_arr[$i]['airAirSegmentRef'][$j] = $v['Key'];
+					$price_data_arr[$i]['airAirSegmentRef'][$j]['key'] = $v['Key'];
+					$price_data_arr[$i]['airAirSegmentRef'][$j]['price'] = $price_data_arr[$i]['price']['TotalPrice'];
+					$price_data_arr[$i]['airAirSegmentRef'][$j]['travelTime'] = $this->lexical_to_human($price_data_arr[$i]['travelTime']);
 				}	
 				$j++;
 			}
@@ -314,6 +452,7 @@ class Travelport
 			$i++;
 		}	
 		
+
 		$airAirSegment_data_arr = array();
 		
 		foreach($airAirSegment as $key => $val){
@@ -322,16 +461,97 @@ class Travelport
 		
 		$x = 0;
 		foreach($price_data_arr as $key => $val){
+			
 			foreach($val['airAirSegmentRef'] as $ke => $ve){
-				$required_arr[$x][] = $airAirSegment_data_arr[$ve];
+				
+				$air_segment_arr = $airAirSegment_data_arr[$ve['key']];
+				
+				$ind_segment_price_arr = array(
+											'segmentPrice' => $ve['price']
+										);
+									
+									
+				$time_duration_arr = array(
+										'travelTime' => $ve['travelTime']
+									);
+				
+				$required_arr[$x][] = array_merge($air_segment_arr, $time_duration_arr, $ind_segment_price_arr);
+				
 			}
 			$x++;
-		}	
-		
+		}
+	
+		//sort the array based on the number of stops - From nonstops, 1 stopover, 2 stopover...
+		sort($required_arr);
+	
 		return $required_arr;
 	}	
 	
 	
+	
+	/*
+	 * Function to extract days, hours and minutes from the lexical representation
+	 * provided by travelport API for journey duration
+	 * @Param string $duration
+	 *
+	 * @return $output - human readable duration
+	 */
+	public function lexical_to_human($duration){
 
+		$match = preg_match('/(-)?P([0-9]+Y)?([0-9]+M)?([0-9]+D)?T?([0-9]+H)?([0-9]+M)?([0-9]+S)?/', $duration, $regs);
+		
+		$output = false;
+	
+		if($match){
+			//return just the days, hours and minute string
+			$days = !empty(str_ireplace('D', '', $regs[4])) ? strtolower($regs[4]) : '';
+			$hours = !empty($regs[5]) ? strtolower($regs[5]) : '0h';
+			$mins = !empty($regs[6]) ? strtolower($regs[6]) : '0m';
+			
+			$output = !empty($days) ? $days.':' : '';
+			$output .= $hours.':'.$mins;
+		}
+	
+		return $output;
+	
+	}
+
+	
+	
+	
+	
+	/*
+	 * Function to covert a specific value of an array as an array.
+	 * E.g.From array( 'specificKey' => 'value') to array('specificKey' => array('value'))
+	 * Can work on multidimesional arrays
+	 *
+	 * Parameters: array $supplied_array, array $keys_arr
+	 * Where $keys_arr are the keys whose value needs
+	 * to be converted into an array (CASE SENSITIVE)
+	 *
+	 * With reference to the afoemetioned example: $keys_arr = array('specificKey');
+	 *
+	 * Return: desired array - by reference
+	 * - B.Singh
+	 */
+	public function add_index( &$supplied_array, $keys_arr ){
+		
+		foreach( $supplied_array as $key => &$val ){
+			
+			if( in_array($key, $keys_arr, TRUE) && is_array($val) ){
+				
+				if(empty($val[0])){
+					
+					$val = array($val);
+					
+				}
+				
+			}elseif( !in_array($key, $keys_arr, TRUE) && is_array($val) ){
+				
+				$this->add_index($val, $keys_arr);
+				
+			}
+		}
+	}
    
 }

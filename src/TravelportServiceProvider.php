@@ -13,12 +13,12 @@ class TravelportServiceProvider extends ServiceProvider
 		$logs_path = __DIR__.'/../logs/travelport.log';
 		$this->publishes([
 			$logs_path => storage_path('logs/travelport.log'),
-		], 'logs');
+		], 'travelport-logs');
 		
 		$dist = __DIR__.'/../config/travelport.php';
         $this->publishes([
             $dist => config_path('travelport.php'),
-        ],'config');
+        ],'travelport-config');
 
         $this->mergeConfigFrom($dist, 'travelport');
     }
